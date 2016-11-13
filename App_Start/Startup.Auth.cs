@@ -1,11 +1,13 @@
-﻿using System;
-using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
-using Microsoft.Owin.Security.Google;
+using Microsoft.Owin.Security.Facebook;
 using Owin;
 using SocialLife.Models;
+using System;
+using System.Configuration;
+using System.Threading.Tasks;
 
 namespace SocialLife
 {
@@ -55,9 +57,25 @@ namespace SocialLife
             //   consumerSecret: "");
 
             //app.UseFacebookAuthentication(
-            //   appId: "",
-            //   appSecret: "");
-
+            //   appId: ConfigurationManager.AppSettings["Facebook_AppId"],
+            //   appSecret: ConfigurationManager.AppSettings["Facebook_AppSecret"]);
+            var facebookOptions = new FacebookAuthenticationOptions
+            {
+                AppId = ConfigurationManager.AppSettings["Facebook_AppId"],
+                AppSecret = ConfigurationManager.AppSettings["Facebook_AppSecret"],
+                Provider = new FacebookAuthenticationProvider()
+                {
+                    OnAuthenticated = (context) =>
+                    {
+                        context.Identity.AddClaim(new System.Security.Claims.Claim("FacebookAccessToken", context.AccessToken));
+                        return Task.FromResult(0);
+                    }
+                },
+                SignInAsAuthenticationType = DefaultAuthenticationTypes.ExternalCookie,
+                SendAppSecretProof = true
+            };
+            facebookOptions.Scope.Add("email user_friends user_likes user_photos");
+            app.UseFacebookAuthentication(facebookOptions);
             //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
             //{
             //    ClientId = "",
