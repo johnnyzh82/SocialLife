@@ -163,50 +163,46 @@ namespace SocialLife.Controllers
 
         private Dictionary<string, FacebookPermissionRequest> GetRequiredPermissions()
         {
-            Dictionary<string, FacebookPermissionRequest> RequiredPermissions =
-                new Dictionary<string, FacebookPermissionRequest>();
+            Dictionary<string, FacebookPermissionRequest> RequiredPermissions = new Dictionary<string, FacebookPermissionRequest>();
 
-            RequiredPermissions.Add
-            ("user_posts",
-                    new FacebookPermissionRequest
-                    {
-                        name = "View Your Posts",
-                        description = "Provides the Social Manager with ability to present a listing of your Facebook Posts, Statuses, and Activities on the Posts Tab of the Profile Page.",
-                        permision_scope_value = "user_posts",
-                        requested = false
-                    }
+            RequiredPermissions.Add(
+                "user_posts",
+                new FacebookPermissionRequest
+                {
+                    name = "View Your Posts",
+                    description = "Provides the Social Manager with ability to present a listing of your Facebook Posts, Statuses, and Activities on the Posts Tab of the Profile Page.",
+                    permision_scope_value = "user_posts",
+                    requested = false
+                }
             );
 
-            RequiredPermissions.Add
-            ("manage_pages",
-                    new FacebookPermissionRequest
-                    {
-                        name = "View Your Facebook Pages",
-                        description = "Provides the Social Manager with ability to present a listing of Facebook Pages that you administer on the Pages Tab of the Profile Page.",
-                        permision_scope_value = "manage_pages",
-                        requested = false
-                    }
+            RequiredPermissions.Add(
+                "manage_pages",
+                new FacebookPermissionRequest
+                {
+                    name = "View Your Facebook Pages",
+                    description = "Provides the Social Manager with ability to present a listing of Facebook Pages that you administer on the Pages Tab of the Profile Page.",
+                    permision_scope_value = "manage_pages",
+                    requested = false
+                }
             );
 
-            RequiredPermissions.Add
-            ("user_friends",
-                    new FacebookPermissionRequest
-                    {
-                        name = "View Your Friends",
-                        description = "Provides the Social Manager with ability to present a listing of your Friends to select for tagging purposes.",
-                        permision_scope_value = "user_friends",
-                        requested = false
-                    }
+            RequiredPermissions.Add(
+                "user_friends",
+                new FacebookPermissionRequest
+                {
+                    name = "View Your Friends",
+                    description = "Provides the Social Manager with ability to present a listing of your Friends to select for tagging purposes.",
+                    permision_scope_value = "user_friends",
+                    requested = false
+                }
             );
             return RequiredPermissions;
 
         }
 
         [HttpPost]
-        public ActionResult RequestPermissions(
-            string okButton,
-            string cancelButton,
-            PermissionRequestViewModel acknowledgedPermissionRequest)
+        public ActionResult RequestPermissions(string okButton, string cancelButton, PermissionRequestViewModel acknowledgedPermissionRequest)
         {
             TempData["ProcessingPermissionRequest"] = true;
             if (okButton != null)
@@ -216,12 +212,12 @@ namespace SocialLife.Controllers
                     acknowledgedPermissionRequest.MissingPermissions.
                     Where(x => x.requested == true))
                 {
-                    permission_scope.Append(
-                        string.Format("{0} ",
-                        permission.permision_scope_value));
+                    permission_scope.Append(string.Format("{0} ",permission.permision_scope_value));
                 }
-                if (permission_scope.Length == 0)
+
+                if (permission_scope.Length == 0) {
                     return Redirect("Index");
+                }                    
                 else
                 {
                     var rerequestURL = base.AddPermissions(permission_scope.ToString());
