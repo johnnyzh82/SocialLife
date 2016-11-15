@@ -173,10 +173,12 @@
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="Attributes\FacebookMappingAttribute.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\FacebookController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\MessageController.cs" />
     <Compile Include="Extensions\DynamicExtension.cs" />
     <Compile Include="Extensions\HtmlHelper.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
@@ -185,11 +187,16 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\DataContractAttribute.cs" />
     <Compile Include="Models\FacebookFriendViewModel.cs" />
     <Compile Include="Models\FacebookPageViewModel.cs" />
+    <Compile Include="Models\FacebookPermissionModel.cs" />
+    <Compile Include="Models\FacebookPostViewModel.cs" />
     <Compile Include="Models\FacebookProfileViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\MessageViewModel.cs" />
+    <Compile Include="Models\PermissionRequestViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -255,9 +262,13 @@
     <Content Include="Views\Facebook\FB_TaggableFriends.cshtml" />
     <Content Include="Views\Facebook\Index.cshtml" />
     <Content Include="Views\Error\Index.cshtml" />
+    <Content Include="Views\Message\Index.cshtml" />
+    <Content Include="Views\Facebook\FB_RequestPermission.cshtml" />
+    <Content Include="Views\Facebook\FB_GetFeed.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Base\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />

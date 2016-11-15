@@ -92,14 +92,6 @@
                         @Html.TextBoxFor(m => m.gender, new { @class = " form-control", @readonly = true })
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-xs-4 text-right">
-                        @Html.LabelFor(m => m.Bio, new { @class = " control-label" })
-                    </div>
-                    <div class="col-xs-6">
-                        @Html.TextBoxFor(m => m.Bio, new { @class = " form-control", @readonly = true })
-                    </div>
-                </div>
             </div>
         </div>
     }
@@ -128,6 +120,7 @@
     <div class="col-md-9">
         <ul class="nav nav-tabs" id="myTab">
             <li class="active"><a href="#pages" data-toggle="tab">Pages</a></li>
+            <li><a href="#posts" data-toggle="tab">Posts</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane active" id="pages">
@@ -151,6 +144,27 @@
                 }
                 <div id="Admin_Pages"></div>
             </div>
+            <div class="tab-pane" id="posts">
+                @using (Ajax.BeginForm("FB_GetFeed", "Facebook",
+                            new AjaxOptions
+                            {
+                                OnFailure = "handleError(xhr,'PostResults')",
+                                HttpMethod = "Get",
+                                UpdateTargetId = "PostResults",
+                                LoadingElementId = "divLoadingPosts"
+                            },
+                            new
+                            {
+                                id = "Posts_Form"
+                            }))
+                {
+                    <div id="divLoadingPosts" style="display:none;">
+                        <img src="~/images/loader.gif" />
+                    </div>
+                }
+                <div id="PostResults"></div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -161,14 +175,13 @@
     <script type="text/javascript">
         $("#Taggable_Friends_Form").submit();
         $("#Admin_Pages_Form").submit();
+        $("#Posts_Form").submit();
         function handleError(ajaxContext, UpdateTargetId) {
             if (ajaxContext != null &&
                 ajaxContext.responseText != null) {
                 $("#" + UpdateTargetId).html(ajaxContext.responseText);
             }
         }
-
     </script>
-
 }
 

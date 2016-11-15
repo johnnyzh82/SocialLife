@@ -1,14 +1,11 @@
-﻿using Facebook;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
+﻿using Antlr.Runtime.Misc;
+using Facebook;
 using SocialLife.Extensions;
 using SocialLife.Filters;
 using SocialLife.Models;
-using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -17,174 +14,45 @@ namespace SocialLife.Controllers
 {
     [Authorize]
     [FacebookAccessToken]
-    public class FacebookController : Controller
+    public class FacebookController : BaseController
     {
-        private Uri RedirectUri
-        {
-            get
-            {
-                var uriBuilder = new UriBuilder(Request.Url);
-                uriBuilder.Query = null;
-                uriBuilder.Fragment = null;
-                uriBuilder.Path = Url.Action("ExternalCallBack", "Facebook");
-                return uriBuilder.Uri;
-            }
-        }
-
-        private RedirectResult GetFacebookLoginURL()
-        {
-
-            if (Session["AccessTokenRetryCount"] == null ||
-                (Session["AccessTokenRetryCount"] != null &&
-                 Session["AccessTokenRetryCount"].ToString() == "0"))
-            {
-                Session.Add("AccessTokenRetryCount", "1");
-
-                FacebookClient fb = new FacebookClient();
-                fb.AppId = ConfigurationManager.AppSettings["Facebook_AppId"];
-                return Redirect(fb.GetLoginUrl(new
-                {
-                    scope = ConfigurationManager.AppSettings["Facebook_Scope"],
-                    redirect_uri = RedirectUri.AbsoluteUri,
-                    response_type = "code"
-                }).ToString());
-            }
-            else
-            {
-                ViewBag.ErrorMessage = "Unable to obtain a valid Facebook Token, contact support";
-                return Redirect(Url.Action("Index", "Error"));
-            }
-        }
-
-        protected override void OnException(ExceptionContext filterContext)
-        {
-            if (filterContext.Exception is FacebookApiLimitException)
-            {
-                //Status message banner notifying user to try again later
-                filterContext.ExceptionHandled = true;
-                ViewBag.GlobalStatusMessage = "Facebook Graph API limit reached, Please try again later...";
-            }
-            else if (filterContext.Exception is FacebookOAuthException)
-            {
-                FacebookOAuthException OAuth_ex = (FacebookOAuthException)filterContext.Exception;
-                if (OAuth_ex.ErrorCode == 190 || OAuth_ex.ErrorSubcode > 0)
-                {
-                    filterContext.ExceptionHandled = true;
-                    filterContext.Result = GetFacebookLoginURL();
-                }
-                else
-                {
-                    //redirect to Facebook Custom Error Page
-                    ViewBag.ErrorMessage = filterContext.Exception.Message;
-                    filterContext.ExceptionHandled = true;
-                    filterContext.Result = RedirectToAction("Index", "Error");
-                }
-
-            }
-            else if (filterContext.Exception is FacebookApiException)
-            {
-                //redirect to Facebook Custom Error Page
-                ViewBag.ErrorMessage = filterContext.Exception.Message;
-                filterContext.ExceptionHandled = true;
-                filterContext.Result = RedirectToAction("Index", "Error");
-            }
-            else
-                base.OnException(filterContext);
-        }
-
-        public async Task<ActionResult> ExternalCallBack(string code)
-        {
-            //Callback return from Facebook will include a unique login encrypted code
-            //for this user's login with our application id
-            //that we can use to obtain a new access token
-            FacebookClient fb = new FacebookClient();
-
-            //Exchange encrypted login code for an access_token
-            dynamic newTokenResult = await fb.GetTaskAsync(
-                                        string.Format("oauth/access_token?client_id={0}&redirect_uri={1}&client_secret={2}&code={3}",
-                                        ConfigurationManager.AppSettings["Facebook_AppId"],
-                                        Url.Encode(RedirectUri.AbsoluteUri),
-                                        ConfigurationManager.AppSettings["Facebook_AppSecret"],
-                                        code));
-            ApplicationUserManager UserManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            if (UserManager != null)
-            {
-                // Retrieve the existing claims for the user and add the FacebookAccessTokenClaim 
-                var userId = HttpContext.User.Identity.GetUserId();
-
-                IList<Claim> currentClaims = await UserManager.GetClaimsAsync(userId);
-
-                //check to see if a claim already exists for FacebookAccessToken
-                Claim OldFacebookAccessTokenClaim = currentClaims.First(x => x.Type == "FacebookAccessToken");
-
-                //Create new FacebookAccessToken claim
-                Claim newFacebookAccessTokenClaim = new Claim("FacebookAccessToken", newTokenResult.access_token);
-                if (OldFacebookAccessTokenClaim == null)
-                {
-                    //Add new FacebookAccessToken Claim
-                    await UserManager.AddClaimAsync(userId, newFacebookAccessTokenClaim);
-                }
-                else
-                {
-                    //Remove the existing FacebookAccessToken Claim
-                    await UserManager.RemoveClaimAsync(userId, OldFacebookAccessTokenClaim);
-                    //Add new FacebookAccessToken Claim
-                    await UserManager.AddClaimAsync(userId, newFacebookAccessTokenClaim);
-                }
-                Session.Add("AccessTokenRetryCount", "0");
-            }
-
-            return RedirectToAction("Index");
-        }
-
         // GET: Facebook
         public async Task<ActionResult> Index()
         {
+            if (checkPermission())
+            {
+                //Check all permission here to avoid missing a permission from 
+                //one of the Ajax based Action Methods
+                PermissionRequestViewModel permissionViewModel = new
+                    PermissionRequestViewModel();
+                permissionViewModel.MissingPermissions =
+                    base.CheckPermissions(
+                            GetRequiredPermissions());
+                if (permissionViewModel.MissingPermissions.Count() > 0)
+                {
+                    return View("FB_RequestPermission", permissionViewModel);
+                }
+            }
+
             var access_token = HttpContext.Items["access_token"].ToString();
-            //try
-            //{
-            var appsecret_proof = access_token.GenerateAppSecretProof();
+            if (!string.IsNullOrEmpty(access_token))
+            {
+                var appsecret_proof = access_token.GenerateAppSecretProof();
+                var fb = new FacebookClient(access_token);
 
-            //string _tempAccessToken = string.Empty;
-            //if (Session["NewAccessToken"] == null)
-            //{
-            //    _tempAccessToken = access_token + "abc";
-            //}
-            //else
-            //{
-            //    _tempAccessToken = access_token;
-            //}
-            var fb = new FacebookClient(access_token);
+                //Get current user's profile
+                dynamic myInfo = await fb.GetTaskAsync("me?fields=first_name,last_name,link,locale,email,name,birthday,gender,location,age_range".GraphAPICall(appsecret_proof));
 
-            //Get current user's profile
-            dynamic myInfo = await fb.GetTaskAsync("me?fields=first_name,last_name,link,locale,email,name,birthday,gender,location,age_range".GraphAPICall(appsecret_proof));
+                //get current picture
+                dynamic profileImgResult = await fb.GetTaskAsync("{0}/picture?width=100&height=100&redirect=false".GraphAPICall((string)myInfo.id, appsecret_proof));
 
-            //get current picture
-            dynamic profileImgResult = await fb.GetTaskAsync("{0}/picture?width=100&height=100&redirect=false".GraphAPICall((string)myInfo.id, appsecret_proof));
-
-            //Hydrate FacebookProfileViewModel with Graph API results
-            var facebookProfile = DynamicExtension.ToStatic<FacebookProfileViewModel>(myInfo);
-            facebookProfile.ImageURL = profileImgResult.data.url;
-            return View(facebookProfile);
-            //}
-            //catch (FacebookApiLimitException ex)
-            //{
-            //    throw new HttpException(500, ex.Message);
-            //}
-            //catch (FacebookOAuthException ex)
-            //{
-            //    throw new HttpException(500, ex.Message);
-            //}
-            //catch (FacebookApiException ex)
-            //{
-            //    throw new HttpException(500, ex.Message);
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw new HttpException(500, ex.Message);
-            //}
-
-
+                //Hydrate FacebookProfileViewModel with Graph API results
+                var facebookProfile = DynamicExtension.ToStatic<FacebookProfileViewModel>(myInfo);
+                facebookProfile.ImageURL = profileImgResult.data.url;
+                return View(facebookProfile);
+            }
+            else
+                throw new HttpException(404, "Missing Access Token");
         }
 
         public async Task<ActionResult> FB_TaggableFriends()
@@ -233,6 +101,140 @@ namespace SocialLife.Controllers
                 throw new HttpException(404, "Missing Access Token");
         }
 
+        public async Task<ActionResult> FB_GetFeed()
+        {
+            var access_token = HttpContext.Items["access_token"].ToString();
+            if (access_token != null)
+            {
+                var appsecret_proof = access_token.GenerateAppSecretProof();
+
+                var fb = new FacebookClient(access_token);
+                dynamic myFeed = await fb.GetTaskAsync(
+                    ("me/feed?fields=id,from {{id, name, picture{{url}} }},story,picture,link,name,description,message,type,created_time,likes,comments").GraphAPICall(appsecret_proof));
+
+                var postList = new List<FacebookPostViewModel>();
+
+                foreach (dynamic post in myFeed.data)
+                {
+                    postList.Add(DynamicExtension.ToStatic<FacebookPostViewModel>(post));
+                }
+                return PartialView(postList);
+            }
+            else {
+                throw new HttpException(404, "Missing Access Token");
+            }
+        }
+        #region Testing Action
+
+        public async Task<ActionResult> FB_RevokeAccessToken()
+        {
+            var access_token = HttpContext.Items["access_token"].ToString();
+            if (!string.IsNullOrEmpty(access_token))
+            {
+                var appsecret_proof = access_token.GenerateAppSecretProof();
+
+                var fb = new FacebookClient(access_token);
+                dynamic myFeed = await fb.DeleteTaskAsync(
+                    "me/permissions".GraphAPICall(appsecret_proof));
+                return RedirectToAction("Index", "Home");
+            }
+            else
+                throw new HttpException(404, "Missing Access Token");
+        }
+
+        public Action FB_TestApiLimit()
+        {
+            throw new FacebookApiLimitException();
+        }
+
+        #endregion
+
+        #region Permission Checking
+
+        private bool checkPermission()
+        {
+            bool checkPermission = true;
+            if (TempData["ProcessingPermissionRequest"] != null)
+            {
+                checkPermission = !((bool)TempData["ProcessingPermissionRequest"]);
+            }
+            return checkPermission;
+        }
+
+        private Dictionary<string, FacebookPermissionRequest> GetRequiredPermissions()
+        {
+            Dictionary<string, FacebookPermissionRequest> RequiredPermissions =
+                new Dictionary<string, FacebookPermissionRequest>();
+
+            RequiredPermissions.Add
+            ("user_posts",
+                    new FacebookPermissionRequest
+                    {
+                        name = "View Your Posts",
+                        description = "Provides the Social Manager with ability to present a listing of your Facebook Posts, Statuses, and Activities on the Posts Tab of the Profile Page.",
+                        permision_scope_value = "user_posts",
+                        requested = false
+                    }
+            );
+
+            RequiredPermissions.Add
+            ("manage_pages",
+                    new FacebookPermissionRequest
+                    {
+                        name = "View Your Facebook Pages",
+                        description = "Provides the Social Manager with ability to present a listing of Facebook Pages that you administer on the Pages Tab of the Profile Page.",
+                        permision_scope_value = "manage_pages",
+                        requested = false
+                    }
+            );
+
+            RequiredPermissions.Add
+            ("user_friends",
+                    new FacebookPermissionRequest
+                    {
+                        name = "View Your Friends",
+                        description = "Provides the Social Manager with ability to present a listing of your Friends to select for tagging purposes.",
+                        permision_scope_value = "user_friends",
+                        requested = false
+                    }
+            );
+            return RequiredPermissions;
+
+        }
+
+        [HttpPost]
+        public ActionResult RequestPermissions(
+            string okButton,
+            string cancelButton,
+            PermissionRequestViewModel acknowledgedPermissionRequest)
+        {
+            TempData["ProcessingPermissionRequest"] = true;
+            if (okButton != null)
+            {
+                StringBuilder permission_scope = new StringBuilder();
+                foreach (FacebookPermissionRequest permission in
+                    acknowledgedPermissionRequest.MissingPermissions.
+                    Where(x => x.requested == true))
+                {
+                    permission_scope.Append(
+                        string.Format("{0} ",
+                        permission.permision_scope_value));
+                }
+                if (permission_scope.Length == 0)
+                    return Redirect("Index");
+                else
+                {
+                    var rerequestURL = base.AddPermissions(permission_scope.ToString());
+                    return Redirect(rerequestURL);
+                }
+            }
+            else  //if(cancelButton != null)
+            {
+                return Redirect("Index");
+            }
+        }
+
+        #endregion
 
     }
 }

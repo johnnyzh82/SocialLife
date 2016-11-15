@@ -41,7 +41,7 @@ namespace SocialLife.Extensions
                         _graphApiCall = string.Format(baseGraphApiCall + "?appsecret_proof={" + (args.Count() - 1) + "}", args);
 
                     //prefix with Graph API Version
-                    return string.Format("v2.1/{0}", _graphApiCall);
+                    return string.Format("v2.8/{0}", _graphApiCall);
                 }
                 else
                     throw new Exception("GraphAPICall requires at least one string parameter that contains the appsecret_proof value.");

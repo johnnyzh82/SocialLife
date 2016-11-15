@@ -41,11 +41,6 @@ namespace SocialLife.Models
                     FacebookMapping facebookMapAttribute = attribute as FacebookMapping;
                     if (facebookMapAttribute != null)
                     {
-                        //string facebookLookupKey = string.Empty;
-                        //if (string.IsNullOrEmpty(facebookMapAttribute.parent))
-                        //    facebookLookupKey = facebookMapAttribute.GetName();
-                        //else
-                        //    facebookLookupKey = facebookMapAttribute.parent;
                         //Add new property container with Facebook mapping and property info details from destination class
                         PropertyLookup.Add(new propertycontainer
                             {
@@ -70,10 +65,6 @@ namespace SocialLife.Models
                             {
                                 //drill down on level to obtain a list of properties from the child set of properties 
                                 //of the dynamic Object
-                                //var childproperties = entry.Value as IDictionary<string, object>;
-                                //mappedValue = (from KeyValuePair<string, object> item in childproperties
-                                //               where item.Key == DestinationPropertyInfo.facebookfield
-                                //               select item.Value).FirstOrDefault();
                                 mappedValue = FindMatchingChildPropertiesRecursively(entry, DestinationPropertyInfo);
 
                                 //child properity was not matched so apply the parent FacebookJson object as the entry value

@@ -40,10 +40,6 @@ namespace SocialLife.Models
         public string gender { get; set; }
 
         [FacebookMapping("age_range")]
-        public Facebook.JsonObject age_range { get; set; }
-
-        [FacebookMapping("bio")]
-        public string Bio { get; set; }
-        
+        public Facebook.JsonObject age_range { get; set; }       
     }
 }

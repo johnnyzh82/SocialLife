@@ -24,7 +24,14 @@
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
                     <li>@Html.ActionLink("About", "About", "Home")</li>
                     <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
-                    <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Facebook<b class="caret"></b></a><ul class="dropdown-menu"><li>@Html.ActionLink("Profile", "Index", "Facebook")</li></ul></li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Facebook<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li>@Html.ActionLink("Profile", "Index", "Facebook")</li>
+                            <li>@Html.ActionLink("Revoke", "FB_RevokeAccessToken", "Facebook")</li>
+                            <li>@Html.ActionLink("Test API Limit", "FB_TestApiLimit", "Facebook")</li>
+                        </ul>
+                    </li>
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>
