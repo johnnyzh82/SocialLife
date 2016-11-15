@@ -17,13 +17,14 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                @Html.ActionLink("Social Manager", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
                     <li>@Html.ActionLink("About", "About", "Home")</li>
                     <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+                    <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Facebook<b class="caret"></b></a><ul class="dropdown-menu"><li>@Html.ActionLink("Profile", "Index", "Facebook")</li></ul></li>
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>
@@ -31,9 +32,18 @@
     </div>
     <div class="container body-content">
         @RenderBody()
+
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            <p>
+                <span class="col-xs-6">
+                    &copy; @DateTime.Now.Year - Sample Facebook ASP.NET MVC Application
+                </span>
+                @if (ViewBag.GlobalStatusMessage != null)
+                {
+                    <span class="text-danger text-center col-xs-4">@ViewBag.GlobalStatusMessage</span>
+                }
+            </p>
         </footer>
     </div>
 

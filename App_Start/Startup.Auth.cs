@@ -74,7 +74,8 @@ namespace SocialLife
                 SignInAsAuthenticationType = DefaultAuthenticationTypes.ExternalCookie,
                 SendAppSecretProof = true
             };
-            facebookOptions.Scope.Add("email user_friends user_likes user_photos");
+            facebookOptions.Scope.Add(ConfigurationManager.AppSettings["Facebook_Scope"]);
+
             app.UseFacebookAuthentication(facebookOptions);
             //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
             //{
