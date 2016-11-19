@@ -23,22 +23,21 @@ namespace SocialLife.Controllers
             {
                 //Check all permission here to avoid missing a permission from 
                 //one of the Ajax based Action Methods
-                PermissionRequestViewModel permissionViewModel = new
-                    PermissionRequestViewModel();
-                permissionViewModel.MissingPermissions =
-                    base.CheckPermissions(
-                            GetRequiredPermissions());
-                if (permissionViewModel.MissingPermissions.Count() > 0)
+                PermissionRequestViewModel permissionViewModel = new PermissionRequestViewModel
+                {
+                    MissingPermissions = base.CheckPermissions(GetRequiredPermissions())
+                };
+                if (permissionViewModel.MissingPermissions.Any())
                 {
                     return View("FB_RequestPermission", permissionViewModel);
                 }
             }
 
-            var access_token = HttpContext.Items["access_token"].ToString();
-            if (!string.IsNullOrEmpty(access_token))
+            var accessToken = HttpContext.Items["access_token"].ToString();
+            if (!string.IsNullOrEmpty(accessToken))
             {
-                var appsecret_proof = access_token.GenerateAppSecretProof();
-                var fb = new FacebookClient(access_token);
+                var appsecret_proof = accessToken.GenerateAppSecretProof();
+                var fb = new FacebookClient(accessToken);
 
                 //Get current user's profile
                 dynamic myInfo = await fb.GetTaskAsync("me?fields=first_name,last_name,link,locale,email,name,birthday,gender,location,age_range".GraphAPICall(appsecret_proof));
@@ -51,18 +50,17 @@ namespace SocialLife.Controllers
                 facebookProfile.ImageURL = profileImgResult.data.url;
                 return View(facebookProfile);
             }
-            else
-                throw new HttpException(404, "Missing Access Token");
+            throw new HttpException(404, "Missing Access Token");
         }
 
         public async Task<ActionResult> FB_TaggableFriends()
         {
-            var access_token = HttpContext.Items["access_token"].ToString();
-            if (access_token != null)
+            var accessToken = HttpContext.Items["access_token"].ToString();
+            if (!string.IsNullOrEmpty(accessToken))
             {
-                var appsecret_proof = access_token.GenerateAppSecretProof();
+                var appsecret_proof = accessToken.GenerateAppSecretProof();
 
-                var fb = new FacebookClient(access_token);
+                var fb = new FacebookClient(accessToken);
                 dynamic myInfo = await fb.GetTaskAsync("me/taggable_friends".GraphAPICall(appsecret_proof));
                 var friendsList = new List<FacebookFriendViewModel>();
                 foreach (dynamic friend in myInfo.data)
@@ -73,18 +71,17 @@ namespace SocialLife.Controllers
 
                 return PartialView(friendsList);
             }
-            else
-                throw new HttpException(404, "Missing Access Token");
+            throw new HttpException(404, "Missing Access Token");
         }
 
         public async Task<ActionResult> FB_AdminPages()
         {
-            var access_token = HttpContext.Items["access_token"].ToString();
-            if (access_token != null)
+            var accessToken = HttpContext.Items["access_token"].ToString();
+            if (!string.IsNullOrEmpty(accessToken))
             {
-                var appsecret_proof = access_token.GenerateAppSecretProof();
+                var appsecret_proof = accessToken.GenerateAppSecretProof();
 
-                var fb = new FacebookClient(access_token);
+                var fb = new FacebookClient(accessToken);
                 dynamic myPages = await fb.GetTaskAsync(
                     "me/accounts?fields=id, name, link, is_published, likes, talking_about_count"
                     .GraphAPICall(appsecret_proof));
@@ -97,18 +94,17 @@ namespace SocialLife.Controllers
 
                 return PartialView(pageList);
             }
-            else
-                throw new HttpException(404, "Missing Access Token");
+            throw new HttpException(404, "Missing Access Token");
         }
 
         public async Task<ActionResult> FB_GetFeed()
         {
-            var access_token = HttpContext.Items["access_token"].ToString();
-            if (access_token != null)
+            var accessToken = HttpContext.Items["access_token"].ToString();
+            if (!string.IsNullOrEmpty(accessToken))
             {
-                var appsecret_proof = access_token.GenerateAppSecretProof();
+                var appsecret_proof = accessToken.GenerateAppSecretProof();
 
-                var fb = new FacebookClient(access_token);
+                var fb = new FacebookClient(accessToken);
                 dynamic myFeed = await fb.GetTaskAsync(
                     ("me/feed?fields=id,from {{id, name, picture{{url}} }},story,picture,link,name,description,message,type,created_time,likes,comments").GraphAPICall(appsecret_proof));
 
@@ -120,37 +116,34 @@ namespace SocialLife.Controllers
                 }
                 return PartialView(postList);
             }
-            else {
-                throw new HttpException(404, "Missing Access Token");
-            }
+            throw new HttpException(404, "Missing Access Token");
         }
-        #region Testing Action
 
+
+        #region Testing Action
         public async Task<ActionResult> FB_RevokeAccessToken()
         {
-            var access_token = HttpContext.Items["access_token"].ToString();
-            if (!string.IsNullOrEmpty(access_token))
+            var accessToken = HttpContext.Items["access_token"].ToString();
+            if (!string.IsNullOrEmpty(accessToken))
             {
-                var appsecret_proof = access_token.GenerateAppSecretProof();
+                var appsecret_proof = accessToken.GenerateAppSecretProof();
 
-                var fb = new FacebookClient(access_token);
+                var fb = new FacebookClient(accessToken);
                 dynamic myFeed = await fb.DeleteTaskAsync(
                     "me/permissions".GraphAPICall(appsecret_proof));
                 return RedirectToAction("Index", "Home");
             }
-            else
-                throw new HttpException(404, "Missing Access Token");
+            throw new HttpException(404, "Missing Access Token");
         }
 
         public Action FB_TestApiLimit()
         {
             throw new FacebookApiLimitException();
         }
-
         #endregion
 
-        #region Permission Checking
 
+        #region Permission Checking
         private bool checkPermission()
         {
             bool checkPermission = true;
@@ -229,7 +222,6 @@ namespace SocialLife.Controllers
                 return Redirect("Index");
             }
         }
-
         #endregion
 
     }

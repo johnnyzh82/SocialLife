@@ -154,6 +154,15 @@ namespace SocialLife.Controllers
             }
         }
 
+        protected bool CheckPermission()
+        {
+            bool checkPermission = true;
+            if (TempData["ProcessingPermissionRequest"] != null)
+            {
+                checkPermission = !((bool)TempData["ProcessingPermissionRequest"]);
+            }
+            return checkPermission;
+        }
 
         public async Task<ActionResult> ExternalCallBack(string code)
         {

@@ -176,6 +176,7 @@
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\FacebookController.cs" />
+    <Compile Include="Controllers\FacebookSearchController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\MessageController.cs" />
@@ -193,6 +194,7 @@
     <Compile Include="Models\FacebookPermissionModel.cs" />
     <Compile Include="Models\FacebookPostViewModel.cs" />
     <Compile Include="Models\FacebookProfileViewModel.cs" />
+    <Compile Include="Models\GeoCodeLocationViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\MessageViewModel.cs" />
@@ -265,6 +267,9 @@
     <Content Include="Views\Message\Index.cshtml" />
     <Content Include="Views\Facebook\FB_RequestPermission.cshtml" />
     <Content Include="Views\Facebook\FB_GetFeed.cshtml" />
+    <Content Include="Views\FacebookSearch\Index.cshtml" />
+    <Content Include="Views\FacebookSearch\FindResults.cshtml" />
+    <Content Include="Views\FacebookSearch\GeoCodeResults.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

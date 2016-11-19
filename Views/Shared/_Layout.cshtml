@@ -28,6 +28,8 @@
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Facebook<b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li>@Html.ActionLink("Profile", "Index", "Facebook")</li>
+                            <li>@Html.ActionLink("Search", "Index", "FacebookSearch")</li>
+                            <li class="divider"></li>
                             <li>@Html.ActionLink("Revoke", "FB_RevokeAccessToken", "Facebook")</li>
                             <li>@Html.ActionLink("Test API Limit", "FB_TestApiLimit", "Facebook")</li>
                         </ul>
