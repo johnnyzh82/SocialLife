@@ -17,9 +17,9 @@ namespace SocialLife.Extensions
             {
                 byte[] hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(accessToken));
                 StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < hash.Length; i++)
+                foreach (byte t in hash)
                 {
-                    builder.Append(hash[i].ToString("x2", CultureInfo.InvariantCulture));
+                    builder.Append(t.ToString("x2", CultureInfo.InvariantCulture));
                 }
                 return builder.ToString();
             }
@@ -34,20 +34,16 @@ namespace SocialLife.Extensions
                 if (args != null && args.Count() > 0)
                 {
                     //Determine if we need to concatenate appsecret_proof query string parameter or inject it as a single query string paramter
-                    string _graphApiCall = string.Empty;
-                    if (baseGraphApiCall.Contains("?"))
-                        _graphApiCall = string.Format(baseGraphApiCall + "&appsecret_proof={" + (args.Count() - 1) + "}", args);
-                    else
-                        _graphApiCall = string.Format(baseGraphApiCall + "?appsecret_proof={" + (args.Count() - 1) + "}", args);
+                    string graphApiCall = baseGraphApiCall.Contains("?") ? 
+                        string.Format(baseGraphApiCall + "&appsecret_proof={" + (args.Count() - 1) + "}", args) : 
+                        string.Format(baseGraphApiCall + "?appsecret_proof={" + (args.Count() - 1) + "}", args);
 
                     //prefix with Graph API Version
-                    return string.Format("v2.8/{0}", _graphApiCall);
+                    return string.Format("{0}/{1}", ConfigurationManager.AppSettings["Facebook_ApiVersion"], graphApiCall);
                 }
-                else
-                    throw new Exception("GraphAPICall requires at least one string parameter that contains the appsecret_proof value.");
+                throw new Exception("GraphAPICall requires at least one string parameter that contains the appsecret_proof value.");
             }
-            else
-                return string.Empty;
+            return string.Empty;
         }
     }
 }

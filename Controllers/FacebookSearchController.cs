@@ -35,7 +35,7 @@ namespace SocialLife.Controllers
                 permissionViewModel.MissingPermissions = base.CheckPermissions(GetRequiredPermissions());
                 if (permissionViewModel.MissingPermissions.Any())
                 {
-                    return View("FB_RequestPermission", permissionViewModel);
+                    return View("~/Views/Facebook/FB_RequestPermission.cshtml", permissionViewModel);
                 }
             }
             #endregion
@@ -49,20 +49,15 @@ namespace SocialLife.Controllers
 
                 #region Search For Place
                 string _searchCenterParam = string.Empty;
-                if (SearchBy == "place" &&
-                    !string.IsNullOrEmpty(SearchCenterCoordinates))
-                    _searchCenterParam = string.Format("&center={0}&distance={1}",
-                        SearchCenterCoordinates,
-                        ConfigurationManager.AppSettings["Facebook_Distance_Meters"].ToString());
+                if (SearchBy == "place" && !string.IsNullOrEmpty(SearchCenterCoordinates))
+                {
+                    _searchCenterParam = string.Format("&center={0}&distance={1}", SearchCenterCoordinates, ConfigurationManager.AppSettings["Facebook_Distance_Meters"]);
+                }
                 #endregion
 
                 #region Search Facebook Graph Query call
                 dynamic myInfo = await fb.GetTaskAsync(
-                    (string.Format("search?q={0}&type={1}{2}&limit=50",
-                                    QueryValue,
-                                    SearchBy,
-                                    _searchCenterParam) +
-                        "&fields=name,id,picture.type(large).width(100).height(100){{url}}")
+                    (string.Format("search?q={0}&type={1}{2}&limit=50", QueryValue, SearchBy, _searchCenterParam) + "&fields=name,id,picture.type(large).width(100).height(100){{url}}")
                         .GraphAPICall(appsecret_proof));
                 #endregion
 
@@ -81,11 +76,13 @@ namespace SocialLife.Controllers
                 string NextPageURI = string.Empty;
 
                 if (myInfo.paging != null && myInfo.paging.next != null)
+                {
                     NextPageURI = myInfo.paging.next;
+                }
+               
 
                 ViewBag.ShowGetMoreData = GetNextPageQuery(NextPageURI, accessToken);
                 #endregion
-
                 return PartialView("FindResults", userList);
 
             }
@@ -96,7 +93,7 @@ namespace SocialLife.Controllers
         private string GetNextPageQuery(string NextPageURI, string access_token)
         {
             string ReturnNextPageURI = NextPageURI
-                    .Replace("https://graph.facebook.com/v2.8/", "")
+                    .Replace(string.Format("https://graph.facebook.com/{0}/", ConfigurationManager.AppSettings["Facebook_ApiVersion"]), "")
                     .Replace(string.Format("&access_token={0}", access_token), "");
 
             return ReturnNextPageURI;
@@ -117,7 +114,7 @@ namespace SocialLife.Controllers
                     permissionViewModel.MissingPermissions = base.CheckPermissions(GetRequiredPermissions());
                     if (permissionViewModel.MissingPermissions.Any())
                     {
-                        return View("FB_RequestPermission", permissionViewModel);
+                        return View("~/Views/Facebook/FB_RequestPermission.cshtml", permissionViewModel);
                     }
                 }
                 #endregion

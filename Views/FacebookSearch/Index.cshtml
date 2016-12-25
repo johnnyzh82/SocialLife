@@ -23,7 +23,7 @@
                         }))
         {
             <div class="input-group text-center">
-                <input type="text" class="form-control" placeholder="Search" name="QueryValue" onkeydown="if (event.keyCode == 13){ return false; }" />
+                <input type="text" class="form-control" placeholder="Search" name="QueryValue" onkeydown="if (event.keyCode === 13){ return false; }" />
                 <div class="input-group-btn">
                     <button class="btn btn-primary dropdown-toggle"
                             data-toggle="dropdown"
@@ -35,7 +35,7 @@
                     <ul class="dropdown-menu dropdown-menu-right" role="menu">
                         <li><a href="#" onclick="SearchFormSubmitter('For People','user')">For People</a></li>
                         <li><a href="#" onclick="SearchFormSubmitter('For Places','place')">For Places</a></li>
-                        <li><a href="#" onclick="SearchFormSubmitter('For Pages','page')">For Pages</a></li>
+                        <li><a href="#" onclick="SearchFormSubmitter('For Pages', 'page')">For Pages</a></li>
                         <li><a href="#" onclick="SearchFormSubmitter('For Events','event')">For Events</a></li>
                         <li><a href="#" onclick="SearchFormSubmitter('For Groups','group')">For Groups</a></li>
                     </ul>
@@ -65,7 +65,7 @@
         {
             <div class="input-group text-center">
                 <input type="text" class="form-control" placeholder="Location" name="LocationSearch"
-                       onkeydown="if (event.keyCode == 13) { return false; } " />
+                       onkeydown="if (event.keyCode === 13) { return false; } " />
                 <div class="input-group-btn">
                     <button class="btn btn-primary" onclick="$('#GeoCode_Results').empty();
                     $('#GeoCode_Results_Form').submit(); return false;">Geocode</button>
@@ -76,13 +76,12 @@
     <div class="col-md-2"></div>
 </div>
 
-<hr />
+<hr/>
+
 <div class="row">
     <div class="col-md-2"></div>
     <div class="col-md-4 text-center">
-        <div id="divLoadingSearch"
-             style="display: none; z-index: 1000; position: absolute;
-                                      top: 50%; left: 50%; opacity: 0.85; -moz-opacity: 0.85; filter: alpha(opacity=85);">
+        <div id="divLoadingSearch" style="display: none; z-index: 1000; position: absolute; top: 50%; left: 50%; -moz-opacity: 0.85; opacity: 0.85; filter: alpha(opacity=85);">
             <img src="~/images/loader.gif"/>
         </div>
 
@@ -92,7 +91,6 @@
             <div id="Search_Results"></div>
             <div id="More_FB_Data"></div>
         </div>
-
 
         <label id="ShowingCountLabel" class="text-success">
         </label>
@@ -138,9 +136,9 @@
             .ready(function() {
                 $("#FB_Scrollable_List")
                     .scroll(function() {
-                        var ScrollingDiv = $("#FB_Scrollable_List"),
-                            buffer = 60 //# of pixels from bottom of scroll to fire get more data function
-                        if (ScrollingDiv.prop('scrollHeight') - ScrollingDiv.scrollTop() <= ScrollingDiv.height() + buffer) {
+                        var scrollingDiv = $("#FB_Scrollable_List"),
+                            buffer = 60; //# of pixels from bottom of scroll to fire get more data function
+                        if (scrollingDiv.prop('scrollHeight') - scrollingDiv.scrollTop() <= scrollingDiv.height() + buffer) {
                             var nextpageUrl = $("#FB_Next_PageLink").val();
                             if (nextpageUrl != null && nextpageUrl !== "") {
                                 GetMoreData(nextpageUrl);
@@ -152,18 +150,18 @@
                     });
 
             });
-        function GetMoreData(NextPageUri) {
+        function GetMoreData(nextPageUri) {
             if (AllowGetMoreDataCall) {
                 AllowGetMoreDataCall = false;
                 //ajax call to get more data
                 $("#divLoadingSearch").show();
                 $.ajax({
                     type: "POST",
-                    url: "FacebookSearch/GetMoreData",
-                    data: { NextPageUri: NextPageUri },
+                    url: "/FacebookSearch/GetMoreData",
+                    data: { NextPageUri: nextPageUri },
                     cache: false,
                     success: function(result) {
-                        if (result != null && result != "") {
+                        if (result != null && result !== "") {
                             $("#divLoadingSearch").hide();
                             $("#FB_Next_PageLink").remove();
                             $("#FB_CurrentDataCount").remove();
